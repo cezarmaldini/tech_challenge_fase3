@@ -1,0 +1,36 @@
+/* styles/genero.css */
+.genero-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+.genero-card {
+  text-align: center;
+}
+
+.genero-icon {
+  width: 100px;
+  height: 200px;
+  background-size: cover;
+  margin: auto;
+}
+
+.genero-icon.homem {
+  background-image: url('https://cdn-icons-png.flaticon.com/512/847/847969.png');
+  filter: hue-rotate(200deg);
+}
+
+.genero-icon.mulher {
+  background-image: url('https://cdn-icons-png.flaticon.com/512/847/847970.png');
+  filter: hue-rotate(330deg);
+}
+
+.genero-info h3 {
+  margin: 10px 0 5px 0;
+}
+
+.genero-info p {
+  font-size: 20px;
+  font-weight: bold;
+}

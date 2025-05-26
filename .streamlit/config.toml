@@ -1,12 +1,6 @@
 [theme]
-base = "custom"
-primaryColor = "#F1145C"
+primaryColor = "#0c5ab5"
 backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F0F0F0"
-textColor = "#000000"
+secondaryBackgroundColor = "#e9e9e9"
+textColor = "#262730"
 font = "sans serif"
-
-[server]
-headless = true
-port = 8501
-enableCORS = false

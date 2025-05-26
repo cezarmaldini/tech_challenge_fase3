@@ -16,3 +16,9 @@ def taxa_positividade_sangue_por_estado():
     """
     engine = get_engine()
     return pd.read_sql(query, con=engine)
+
+def proporcao_genero():
+    homens = 70
+    mulheres = 30
+
+    return homens, mulheres
