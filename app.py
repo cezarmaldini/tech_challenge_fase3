@@ -2,7 +2,13 @@ import streamlit as st
 import streamlit_option_menu
 from streamlit_option_menu import option_menu
 import plotly.express as px
-from queries.queries import taxa_positividade_sangue_por_estado, proporcao_genero
+from queries.queries import (
+    taxa_positividade_sangue_por_estado,
+    casos_positivos_por_genero,
+    total_testes_por_faixa_etaria,
+    positivos_por_raca,
+    positivos_por_escolaridade
+)
 
 # Confiuração inicial da aplicação
 st.set_page_config(
@@ -26,18 +32,29 @@ if option == 'Analytics':
     st.title('Data Analytics | PNAD COVID 19')
 
     # Abas: Dashboard e Tabela
-    aba1, aba2 = st.tabs(['Dashboard', 'Tabela'])
+    aba1, aba2 = st.tabs(['📊 Dashboard', '📅 Tabela'])
 
     # Aba Dashboard
     with aba1:
-        st.header('Dashboard')
 
+        # Filtro de Mês
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            meses = ['Todos', 'setembro', 'outubro', 'novembro']
+            mes_selecionado = st.selectbox('Selecione o mês', meses)
+            mes_param = None if mes_selecionado == 'Todos' else mes_selecionado
+
+
+        # Análises por Estado
+        st.header('Análises por Estado')
+        st.divider()
+
+        # Separação em colunas
         col1, col2 = st.columns(2)
-
         with col1:
             st.subheader("Mapa de Casos por Estado")
 
-            df = taxa_positividade_sangue_por_estado()
+            df = taxa_positividade_sangue_por_estado(mes_param)
             df['estado'] = df['estado'].str.title()
 
             geojson_url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
@@ -81,18 +98,76 @@ if option == 'Analytics':
             )
 
             st.plotly_chart(fig_bar, use_container_width=True)
-    
-    # Carrega os percentuais
-    homem_perc, mulher_perc = proporcao_genero()
+        
+        # Análises por Características Demográficas
+        st.header('Análises por Características Demográficas')
+        st.divider()
 
-    # Lê o HTML
-    with open("components/genero.html", "r") as f:
-        html = f.read().replace("{{HOMEM_PERC}}", f"{homem_perc:.1f}").replace("{{MULHER_PERC}}", f"{mulher_perc:.1f}")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Casos Positivos por Gênero")
 
-    # Lê e injeta o CSS
-    with open("styles/genero.css", "r") as f:
-        css = f"<style>{f.read()}</style>"
+            df_sexo = casos_positivos_por_genero()
+            fig_sexo = px.pie(
+                df_sexo,
+                names='sexo',
+                values='positivos',
+                hole=0.5,
+                color_discrete_sequence=['#0c5ab5', '#07a6d5']
+            )
+            fig_sexo.update_layout(
+                showlegend=True,
+                margin=dict(t=0, b=0, l=0, r=0)
+            )
+            st.plotly_chart(fig_sexo, use_container_width=True)
+            
+            st.subheader("Casos Positivos por Cor/Raça")
+            df_cor = positivos_por_raca()
 
-    # Renderiza no Streamlit
-    st.markdown(css, unsafe_allow_html=True)
-    st.markdown(html, unsafe_allow_html=True)
+            fig_cor = px.bar(
+                df_cor,
+                x="cor",
+                y="total_casos_positivos",
+                color="total_casos_positivos",
+                color_continuous_scale=['#8ae4ff', '#0c5ab5'],
+                labels={"cor": "Cor/Raça", "total_casos_positivos": "Casos Positivos"},
+                height=500
+            )
+
+            fig_cor.update_layout(xaxis_title="Cor/Raça", yaxis_title="Casos Positivos")
+            st.plotly_chart(fig_cor, use_container_width=True)
+
+        
+        with col2:
+            st.subheader("Testes por Faixa Etária")
+
+            df_idade = total_testes_por_faixa_etaria()
+
+            fig_linhas = px.line(
+                df_idade,
+                x="faixa_etaria",
+                y=["positivos"],
+                markers=True,
+                labels={"value": "Quantidade", "faixa_etaria": "Faixa Etária", "variable": "Tipo"}
+            )
+
+            st.plotly_chart(fig_linhas, use_container_width=True)
+
+            st.subheader("Casos Positivos por Escolaridade")
+            df_esc = positivos_por_escolaridade()
+
+            df_esc = df_esc.sort_values(by="positivos", ascending=True)
+
+            fig_esc = px.bar(
+                df_esc,
+                x="positivos",
+                y="escolaridade",
+                orientation='h',
+                color="positivos",
+                color_continuous_scale=['#8ae4ff', '#0c5ab5'],
+                labels={"escolaridade": "Escolaridade"},
+                height=500
+            )
+
+            fig_esc.update_layout(xaxis_title="", yaxis_title="Escolaridade")
+            st.plotly_chart(fig_esc, use_container_width=True)
