@@ -1,6 +1,7 @@
 import pandas as pd
 from config.db import get_engine
 
+# Consulta que faz o cálculo do Total de Pessoas Entrevistadas, Total de Testes Realizados e Total de Testes Positivos
 def metricas_gerais(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     query = """
         SELECT
@@ -20,7 +21,8 @@ def metricas_gerais(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     params = {'mes_nome': mes_nome, 'estado': estado}
     return pd.read_sql(query, con=engine, params={k: v for k, v in params.items() if v})
 
-def taxa_positividade_sangue_por_estado(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
+# Consulta que calcula a quantidade casos positivos por estado
+def casos_positivos_estados(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     engine = get_engine()
     query = f"""
         SELECT
@@ -39,6 +41,7 @@ def taxa_positividade_sangue_por_estado(mes_nome=None, estado=None, coluna_exame
     params = {"mes_nome": mes_nome, "estado": estado}
     return pd.read_sql(query, con=engine, params=params)
 
+# Consulta que calcula os casos positivos por gênero
 def casos_positivos_por_genero(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     engine = get_engine()
     query = f"""
@@ -54,7 +57,8 @@ def casos_positivos_por_genero(mes_nome=None, estado=None, coluna_exame='exame_s
     params = {"mes_nome": mes_nome, "estado": estado}
     return pd.read_sql(query, con=engine, params=params)
 
-def total_testes_por_faixa_etaria(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
+# Consulta que calcula os casos positivos por faixa etária
+def casos_positivos_faixa_etaria(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     engine = get_engine()
     query = f"""
         SELECT
@@ -78,7 +82,8 @@ def total_testes_por_faixa_etaria(mes_nome=None, estado=None, coluna_exame='exam
     params = {"mes_nome": mes_nome, "estado": estado}
     return pd.read_sql(query, con=engine, params=params)
 
-def positivos_por_raca(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
+# Consulta que calcula a quantidade de casos por Cor/Raça
+def casos_positivos_raca(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     engine = get_engine()
     query = f"""
         SELECT
@@ -95,7 +100,8 @@ def positivos_por_raca(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     params = {"mes_nome": mes_nome, "estado": estado}
     return pd.read_sql(query, con=engine, params=params)
 
-def positivos_por_escolaridade(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
+# Consulta que calcula os casos positivos por escolaridade
+def casos_positivos_escolaridade(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     engine = get_engine()
     query = f"""
         SELECT
@@ -112,26 +118,8 @@ def positivos_por_escolaridade(mes_nome=None, estado=None, coluna_exame='exame_s
     params = {"mes_nome": mes_nome, "estado": estado}
     return pd.read_sql(query, con=engine, params=params)
 
-def correlacao_raca_escolaridade(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
-    engine = get_engine()
-    query = f"""
-        SELECT
-            cor,
-            escolaridade,
-            COUNT(*) AS positivos
-        FROM dados_pnad
-        WHERE LOWER({coluna_exame}) = 'positivo'
-          AND cor IS NOT NULL
-          AND escolaridade IS NOT NULL
-          AND (%(mes_nome)s IS NULL OR mes_nome = %(mes_nome)s)
-          AND (%(estado)s IS NULL OR estado = %(estado)s)
-        GROUP BY cor, escolaridade
-        ORDER BY cor, escolaridade;
-    """
-    params = {"mes_nome": mes_nome, "estado": estado}
-    return pd.read_sql(query, con=engine, params=params)
-
-def positivos_por_auxilio(mes=None, estado=None, exame='exame_sangue'):
+# Consulta que calcula os casos positivos por Bolsa Família e Auxílio Emergencial
+def casos_positivos_auxilio(mes=None, estado=None, exame='exame_sangue'):
     conditions = ["LOWER({}) = 'positivo'".format(exame)]
     if mes:
         conditions.append("mes_nome = %(mes)s")
@@ -151,7 +139,8 @@ def positivos_por_auxilio(mes=None, estado=None, exame='exame_sangue'):
     engine = get_engine()
     return pd.read_sql(query, con=engine, params={"mes": mes, "estado": estado})
 
-def positivos_por_faixa_renda(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
+# Consulta que calcula os casos positivos por faixa de renda
+def casos_positivos_renda(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
     engine = get_engine()
     query = f"""
         SELECT
@@ -168,4 +157,44 @@ def positivos_por_faixa_renda(mes_nome=None, estado=None, coluna_exame='exame_sa
         ORDER BY "faixa_rendimentoId";
     """
     params = {"mes_nome": mes_nome, "estado": estado}
+    return pd.read_sql(query, con=engine, params=params)
+
+def tabela_dados_filtrados(mes=None, estado=None, sexo=None, cor=None, escolaridade=None, faixa_renda=None):
+    engine = get_engine()
+    query = """
+        SELECT
+            mes_nome,
+            estado,
+            CASE
+                WHEN idade BETWEEN 0 AND 17 THEN '0-17'
+                WHEN idade BETWEEN 18 AND 29 THEN '18-29'
+                WHEN idade BETWEEN 30 AND 44 THEN '30-44'
+                WHEN idade BETWEEN 45 AND 59 THEN '45-59'
+                WHEN idade >= 60 THEN '60+'
+                ELSE 'Desconhecida'
+            END AS faixa_etaria,
+            sexo,
+            cor,
+            escolaridade,
+            exame_swab,
+            exame_dedo,
+            exame_sangue,
+            faixa_renda
+        FROM dados_pnad
+        WHERE (%(mes)s IS NULL OR mes_nome = %(mes)s)
+          AND (%(estado)s IS NULL OR estado = %(estado)s)
+          AND (%(sexo)s IS NULL OR sexo = %(sexo)s)
+          AND (%(cor)s IS NULL OR cor = %(cor)s)
+          AND (%(escolaridade)s IS NULL OR escolaridade = %(escolaridade)s)
+          AND (%(faixa_renda)s IS NULL OR faixa_renda = %(faixa_renda)s)
+        LIMIT 100
+    """
+    params = {
+        "mes": mes,
+        "estado": estado,
+        "sexo": sexo,
+        "cor": cor,
+        "escolaridade": escolaridade,
+        "faixa_renda": faixa_renda
+    }
     return pd.read_sql(query, con=engine, params=params)
