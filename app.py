@@ -8,7 +8,7 @@ from queries.queries import (
     positivos_por_raca,
     positivos_por_escolaridade,
     positivos_por_auxilio,
-    positivos_por_renda,
+    positivos_por_faixa_renda,
     metricas_gerais
 )
 
@@ -243,7 +243,7 @@ if option == 'Analytics':
 
 
         st.markdown("### Casos Positivos por Faixa de Renda")
-        df_renda = positivos_por_renda(mes_param, estado_param, exame_param)
+        df_renda = positivos_por_faixa_renda(mes_param, estado_param, exame_param)
 
         fig_renda = px.bar(
             df_renda,

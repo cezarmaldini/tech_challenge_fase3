@@ -151,23 +151,21 @@ def positivos_por_auxilio(mes=None, estado=None, exame='exame_sangue'):
     engine = get_engine()
     return pd.read_sql(query, con=engine, params={"mes": mes, "estado": estado})
 
-def positivos_por_renda(mes=None, estado=None, exame='exame_sangue'):
-    conditions = ["LOWER({}) = 'positivo'".format(exame)]
-    if mes:
-        conditions.append("mes_nome = %(mes)s")
-    if estado:
-        conditions.append("estado = %(estado)s")
-    where_clause = " AND ".join(conditions)
-
+def positivos_por_faixa_renda(mes_nome=None, estado=None, coluna_exame='exame_sangue'):
+    engine = get_engine()
     query = f"""
         SELECT
             faixa_renda,
-            faixa_rendimentoId,
+            "faixa_rendimentoId",
             COUNT(*) AS positivos
         FROM dados_pnad
-        WHERE {where_clause}
-        GROUP BY faixa_renda
-        ORDER BY faixa_rendimentoId
+        WHERE LOWER({coluna_exame}) = 'positivo'
+          AND faixa_renda IS NOT NULL
+          AND "faixa_rendimentoId" IS NOT NULL
+          AND (%(mes_nome)s IS NULL OR mes_nome = %(mes_nome)s)
+          AND (%(estado)s IS NULL OR estado = %(estado)s)
+        GROUP BY faixa_renda, "faixa_rendimentoId"
+        ORDER BY "faixa_rendimentoId";
     """
-    engine = get_engine()
-    return pd.read_sql(query, con=engine, params={"mes": mes, "estado": estado})
+    params = {"mes_nome": mes_nome, "estado": estado}
+    return pd.read_sql(query, con=engine, params=params)
