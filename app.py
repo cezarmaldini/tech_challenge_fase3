@@ -37,12 +37,23 @@ if option == 'Analytics':
     # Aba Dashboard
     with aba1:
 
-        # Filtro de Mês
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            meses = ['Todos', 'setembro', 'outubro', 'novembro']
-            mes_selecionado = st.selectbox('Selecione o mês', meses)
-            mes_param = None if mes_selecionado == 'Todos' else mes_selecionado
+        # Filtros
+        st.subheader("Filtros")
+        col_f1, col_f2 = st.columns(2)
+
+        with col_f1:
+            mes_opcao = st.selectbox("Mês", ["Todos", "setembro", "outubro", "novembro"])
+            mes_param = None if mes_opcao == "Todos" else mes_opcao
+
+        with col_f2:
+            estados_disponiveis = [
+                "Todos", "Acre", "Alagoas", "Amapá", "Amazonas", "Bahia", "Ceará", "Distrito Federal",
+                "Espírito Santo", "Goiás", "Maranhão", "Mato Grosso", "Mato Grosso do Sul", "Minas Gerais",
+                "Pará", "Paraíba", "Paraná", "Pernambuco", "Piauí", "Rio de Janeiro", "Rio Grande do Norte",
+                "Rio Grande do Sul", "Rondônia", "Roraima", "Santa Catarina", "São Paulo", "Sergipe", "Tocantins"
+            ]
+            estado_opcao = st.selectbox("Estado", estados_disponiveis)
+            estado_param = None if estado_opcao == "Todos" else estado_opcao
 
 
         # Análises por Estado
@@ -54,7 +65,7 @@ if option == 'Analytics':
         with col1:
             st.subheader("Mapa de Casos por Estado")
 
-            df = taxa_positividade_sangue_por_estado(mes_param)
+            df = taxa_positividade_sangue_por_estado(mes_param, estado_param)
             df['estado'] = df['estado'].str.title()
 
             geojson_url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
@@ -107,7 +118,7 @@ if option == 'Analytics':
         with col1:
             st.subheader("Casos Positivos por Gênero")
 
-            df_sexo = casos_positivos_por_genero()
+            df_sexo = casos_positivos_por_genero(mes_param, estado_param)
             fig_sexo = px.pie(
                 df_sexo,
                 names='sexo',
@@ -122,7 +133,7 @@ if option == 'Analytics':
             st.plotly_chart(fig_sexo, use_container_width=True)
             
             st.subheader("Casos Positivos por Cor/Raça")
-            df_cor = positivos_por_raca()
+            df_cor = positivos_por_raca(mes_param, estado_param)
 
             fig_cor = px.bar(
                 df_cor,
@@ -141,7 +152,7 @@ if option == 'Analytics':
         with col2:
             st.subheader("Testes por Faixa Etária")
 
-            df_idade = total_testes_por_faixa_etaria()
+            df_idade = total_testes_por_faixa_etaria(mes_param, estado_param)
 
             fig_linhas = px.line(
                 df_idade,
@@ -154,7 +165,7 @@ if option == 'Analytics':
             st.plotly_chart(fig_linhas, use_container_width=True)
 
             st.subheader("Casos Positivos por Escolaridade")
-            df_esc = positivos_por_escolaridade()
+            df_esc = positivos_por_escolaridade(mes_param, estado_param)
 
             df_esc = df_esc.sort_values(by="positivos", ascending=True)
 
