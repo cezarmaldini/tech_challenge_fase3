@@ -130,3 +130,44 @@ def correlacao_raca_escolaridade(mes_nome=None, estado=None, coluna_exame='exame
     """
     params = {"mes_nome": mes_nome, "estado": estado}
     return pd.read_sql(query, con=engine, params=params)
+
+def positivos_por_auxilio(mes=None, estado=None, exame='exame_sangue'):
+    conditions = ["LOWER({}) = 'positivo'".format(exame)]
+    if mes:
+        conditions.append("mes_nome = %(mes)s")
+    if estado:
+        conditions.append("estado = %(estado)s")
+    where_clause = " AND ".join(conditions)
+
+    query = f"""
+        SELECT
+            bolsa_familia,
+            auxilio,
+            COUNT(*) AS positivos
+        FROM dados_pnad
+        WHERE {where_clause}
+        GROUP BY bolsa_familia, auxilio
+    """
+    engine = get_engine()
+    return pd.read_sql(query, con=engine, params={"mes": mes, "estado": estado})
+
+def positivos_por_renda(mes=None, estado=None, exame='exame_sangue'):
+    conditions = ["LOWER({}) = 'positivo'".format(exame)]
+    if mes:
+        conditions.append("mes_nome = %(mes)s")
+    if estado:
+        conditions.append("estado = %(estado)s")
+    where_clause = " AND ".join(conditions)
+
+    query = f"""
+        SELECT
+            faixa_renda,
+            faixa_rendimentoId,
+            COUNT(*) AS positivos
+        FROM dados_pnad
+        WHERE {where_clause}
+        GROUP BY faixa_renda
+        ORDER BY faixa_rendimentoId
+    """
+    engine = get_engine()
+    return pd.read_sql(query, con=engine, params={"mes": mes, "estado": estado})

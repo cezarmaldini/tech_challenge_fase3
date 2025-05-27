@@ -7,6 +7,8 @@ from queries.queries import (
     total_testes_por_faixa_etaria,
     positivos_por_raca,
     positivos_por_escolaridade,
+    positivos_por_auxilio,
+    positivos_por_renda,
     metricas_gerais
 )
 
@@ -193,3 +195,63 @@ if option == 'Analytics':
             fig_esc.update_layout(xaxis_title="", yaxis_title="Escolaridade")
             st.plotly_chart(fig_esc, use_container_width=True)
         st.divider()
+
+        # Análises por Características Demográficas
+        st.header('Análise por Trabalho e Renda')
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### Casos Positivos e Bolsa Família")
+
+            df_aux = positivos_por_auxilio(mes_param, estado_param, exame_param)
+
+            df_bolsa = df_aux.groupby("bolsa_familia", as_index=False)["positivos"].sum()
+
+            fig_bolsa = px.pie(
+                df_bolsa,
+                names='bolsa_familia',
+                values='positivos',
+                hole=0.60,
+                color_discrete_sequence=['#0c5ab5', '#07a6d5']
+            )
+            fig_bolsa.update_layout(
+                showlegend=True,
+                margin=dict(t=0, b=0, l=0, r=0),
+                height=300
+            )
+            st.plotly_chart(fig_bolsa, use_container_width=True)
+
+        with col2:
+            st.markdown("#### Casos Positivos e Auxílio Emergencial")
+
+            df_auxilio = df_aux.groupby("auxilio", as_index=False)["positivos"].sum()
+
+            fig_auxilio = px.pie(
+                df_auxilio,
+                names='auxilio',
+                values='positivos',
+                hole=0.60,
+                color_discrete_sequence=['#0c5ab5', '#07a6d5']
+            )
+            fig_auxilio.update_layout(
+                showlegend=True,
+                margin=dict(t=0, b=0, l=0, r=0),
+                height=300
+            )
+            st.plotly_chart(fig_auxilio, use_container_width=True)
+
+
+        st.markdown("### Casos Positivos por Faixa de Renda")
+        df_renda = positivos_por_renda(mes_param, estado_param, exame_param)
+
+        fig_renda = px.bar(
+            df_renda,
+            x="faixa_renda",
+            y="positivos",
+            color="positivos",
+            color_continuous_scale=['#8ae4ff', '#0c5ab5'],
+            labels={"faixa_renda": "Faixa de Renda", "positivos": "Casos Positivos"}
+        )
+        st.plotly_chart(fig_renda, use_container_width=True)
+
