@@ -24,14 +24,191 @@ st.set_page_config(
 with st.sidebar:
     option = option_menu(
         menu_title="Navegação",
-        options=["Analytics", "ChatBot"],
-        icons=["bar-chart", "robot"],
+        options=["Home", "Dashboard"],
+        icons=["house", "bar-chart"],
         menu_icon="card-list",
         default_index=0
     )
 
-# Página Analytics
-if option == 'Analytics':
+# Página Apresentação do Projeto
+if option == 'Home':
+    st.title("📊 Tech Challenge | Fase 3")
+    st.markdown("---")
+
+    # 1. Contextualização do Problema
+    st.header("🔍 Contextualização do Problema")
+    st.markdown("""
+    Durante a pandemia de COVID-19, compreender o comportamento da população, os sintomas clínicos mais comuns e os impactos sociais e econômicos 
+    tornou-se uma prioridade para instituições de saúde. Pensando nisso, o governo brasileiro disponibilizou a pesquisa **PNAD COVID-19**, 
+    realizada pelo IBGE, com o intuito de monitorar esses impactos de forma contínua.
+
+    Agora, imagine que você foi contratado como **Especialista em Data Analytics** por um grande hospital, com a missão de analisar como a população 
+    se comportou durante aquele período e quais indicadores seriam essenciais para o planejamento estratégico diante de um possível novo surto da doença.
+
+    Apesar de sua contratação ser recente, sua equipe identificou na PNAD COVID-19 uma fonte rica e confiável de dados para orientar decisões clínicas, 
+    demográficas e econômicas. No entanto, a base é extensa, descentralizada e bruta — o que dificulta a obtenção de insights rápidos.
+
+    Com base em até 20 questionamentos da pesquisa e dados de três meses selecionados, a solução visa fornecer ao hospital uma visão clara sobre o 
+    impacto da COVID-19 e apoiar ações preventivas e estratégicas no futuro.
+    """)
+
+    st.markdown("---")
+
+    # 2. Solução
+    st.header("🧩 Solução")
+    st.markdown("""
+    Para responder ao desafio proposto, foi desenvolvida uma **arquitetura moderna de dados e analytics**, capaz de transformar os dados brutos da PNAD COVID-19 
+    em informações acessíveis, relevantes e interativas.
+
+    A solução é composta por:
+
+    - **Ingestão e tratamento dos dados** utilizando arquitetura em camadas (Bronze, Silver, Gold) no Microsoft Fabric.
+    - **Interface interativa** para análises exploratórias via Streamlit, hospedada na nuvem.
+    """)
+
+    st.markdown('##### Arquitetura da Solução:')
+    st.image("https://i.ibb.co/rKLb4C7G/Planejamento-de-Sprint-Quadro-1.jpg", use_container_width=True)
+
+    st.markdown('##### Questionamentos utilizados:')
+    st.markdown("""
+    - **A002:** Idade do morador.
+    - **A003:** Sexo.
+    - **A004:** Cor ou raça.
+    - **A005:** Escolaridade.
+    - **B009B:** Resultados do exame SWAB.
+    - **B009D:** Resultados do exame de sangue através do dedo.
+    - **B009F:** Resultados do exame de sangue através da veia do braço.
+    - **C007C:** Tipo de trabalho, cargo ou função.
+    - **C01011:** Faixa de rendimento.
+    - **D0031:** Bolsa Família.
+    - **D0051:** Auxílio emergencial.
+    - **F001:** Domicílio.
+    - **F0022:** Número da faixa do aluguel.
+    """)
+
+    st.markdown("""
+    ##### Meses analisados:
+    Setembro, Outubro e Novembro de 2020    
+    """)
+
+    st.markdown('##### A solução está disponível em:')
+    st.markdown('https://tech-challenge-fase3.onrender.com')
+
+    st.markdown("---")
+
+    # 3. Pipeline de Dados
+    st.header("🔄 Pipeline de Dados (ETL)")
+    st.markdown("""
+    A construção do pipeline de dados segue o conceito da arquitetura **medalhão** e foi implementada no **Microsoft Fabric**, garantindo qualidade, rastreabilidade e performance:
+
+    | Camada | Descrição | Notebook |
+    |--------|-----------|----------|
+    | 🥉 **Bronze** | Dados brutos carregados diretamente dos arquivos disponibilizados pelo IBGE, sem qualquer modificação. |  |
+    | 🥈 **Silver** | Aplicação de filtros, limpeza de dados desnecessárias, colunas renomeadas, formatos de dados. | `nb_dados_silver.ipynb` e `nb_dicionarios_silver.ipynb`|
+    | 🥇 **Gold** | Transformações finais com agregações, categorização, mesclagens (joins) e preparação para análises. | `nb_dados_gold.ipynb` |
+    """)
+
+    st.markdown('##### 🥉 Camada Bronze')
+    st.markdown("""
+    Nessa camada os dados são carregados manualmente no Files do Lakehouse, seguindo a estrutura da imagem: 
+    """)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.image("https://i.ibb.co/XTGMMRp/dict.png", caption='Dicionários', use_container_width=True)
+    with col2:
+        st.image("https://i.ibb.co/NgGTKH5W/dados-pnad.png", caption='Dados', use_container_width=True)
+
+    st.markdown('##### 🥈 Camada Silver')
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("""
+        **Arquivo: nb_dicionarios_silver.ipynb**
+        
+        Processa os arquivos de dicionários armazenados na camada bronze e carrega na camada silver em formato parquet.
+        """)
+        st.image('https://i.ibb.co/4w9bsKv1/Planejamento-de-Sprint-Quadro-2.jpg', use_container_width=True)
+
+    with col2:
+        st.markdown("""
+        **Arquivo: nb_dados_silver.ipynb**
+        
+        Processa os arquivos de dicionários armazenados na camada bronze e carrega na camada silver em formato parquet.
+        """)
+        st.image('https://i.ibb.co/twKtK800/Planejamento-de-Sprint-Quadro-3.jpg', use_container_width=True)
+
+    st.markdown('##### 🥇 Camada Gold')
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("""
+        **Arquivo: nb_dados_gold.ipynb**
+        
+        Processa dados armazenados na camada silver no formato parquet, faz as transformações necessárias para a fase de analytics
+        e carrega na camada gold em formato delta table.
+        """)
+        st.image('https://i.ibb.co/mV8B6HVt/Planejamento-de-Sprint-Quadro-4.jpg', use_container_width=True)
+        
+
+    st.markdown("---")
+
+    # 4. Analytics
+    st.header("📈 Analytics")
+    st.markdown("""
+    A camada de **Analytics** foi desenvolvida com a biblioteca **Streamlit**, proporcionando uma interface interativa e acessível para exploração dos dados.
+
+    Funcionalidades principais:
+
+    - Dashboards com análises por estado, características demograficas, de trabalho e renda.
+    - Filtros de mês, estado e tipos de exames
+    - Análises por **gênero, idade, raça/cor, escolaridade e renda**
+    - **Gráficos interativos**: barras, roscas, mapas
+    """)
+
+    st.markdown("---")
+
+    # 5. Tecnologias Utilizadas
+    st.header("🛠️ Tecnologias Utilizadas")
+    st.markdown("""
+    A solução foi desenvolvida com um conjunto de ferramentas modernas, voltadas para tratamento de dados em larga escala, visualização interativa e implantação em nuvem:
+
+    - **Microsoft Fabric:** Lakehouse, Notebooks, OneLake
+    - **PySpark:** Processamento de dados
+    - **SQL:** Consultas para análises gráficas
+    - **Streamlit:** Construção da interface web
+    - **Plotly:** Plotagem de gráficos e visuais interativos
+    - **GitHub:** Versionamento e CI/CD
+    - **Render:** Deploy
+    """)
+
+    st.markdown("---")
+
+    # 6. Estrutura do Repositório
+    st.header("📁 Estrutura do Repositório")
+    st.markdown("""
+    O projeto foi versionado e está disponível publicamente no GitHub:
+
+    🔗 [Acesse o repositório no GitHub](https://github.com/cezarmaldini/tech_challenge_fase3)
+
+    A estrutura do repositório foi organizada para garantir **manutenibilidade, legibilidade e separação de responsabilidades**:
+
+    | Diretório/Arquivo | Descrição |
+    |-------------------|-----------|
+    | `app.py` | Arquivo principal da aplicação Streamlit. |
+    | `config/` | Contém scripts de configuração, como conexão com banco de dados (`db.py`). |
+    | `queries/` | Contém o módulo de consultas SQL utilizadas nos dashboards (`queries.py`). |
+    | `notebooks/` | Notebooks utilizados nas etapas de ingestão, tratamento e transformação dos dados. |
+    | `requirements.txt` | Lista de dependências para ambiente Python. |
+    | `.streamlit/config.toml` | Arquivo de configuração da interface do Streamlit. |
+    | `README.md` | Descrição do projeto, instruções de execução e propósito. |
+
+    A organização do repositório segue boas práticas de projetos em ciência de dados e engenharia de dados, com separação entre camada de aplicação, lógica de dados e notebooks exploratórios.
+    """)
+
+    st.markdown("---")
+
+    st.success("Projeto finalizado com arquitetura moderna, dados de qualidade e análises acessíveis.")
+
+# Página Dashboard
+elif option == 'Dashboard':
     st.title('Data Analytics | PNAD COVID 19')
     st.markdown('##### Perído: setembro, outubro e novembro de 2020')
 
